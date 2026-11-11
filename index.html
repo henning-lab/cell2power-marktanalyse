@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Produktwahl Cell-2-Power</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout: eine Spalte, Kernaussagen zuerst, dann Regler, Rangliste, zwei Karten, Empfehlung, Belege */
+:root{
+  --bg:#f6f7f5; --surface:#fcfcfb; --ink:#10140f; --ink2:#4c524b; --ink3:#7a8078; --line:#dfe2dc;
+  --accent:#1f5d4c; --accent-soft:#e3efe9;
+  --s1:#2a78d6; --neg:#d03b3b; --mute:#b9beb6;
+  --good:#0ca30c; --warn:#fab219; --crit:#d03b3b;
+  --display:"Archivo","Helvetica Neue",Arial,sans-serif; --body:"IBM Plex Sans","Segoe UI",Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){color-scheme:dark;
+    --bg:#131513; --surface:#1a1c1a; --ink:#eef0ec; --ink2:#bfc4bc; --ink3:#8b9189; --line:#30342f;
+    --accent:#7fc7ae; --accent-soft:#1f2e28; --s1:#3987e5; --neg:#e66767; --mute:#555a53;}
+}
+:root[data-theme="dark"]{color-scheme:dark;
+  --bg:#131513; --surface:#1a1c1a; --ink:#eef0ec; --ink2:#bfc4bc; --ink3:#8b9189; --line:#30342f;
+  --accent:#7fc7ae; --accent-soft:#1f2e28; --s1:#3987e5; --neg:#e66767; --mute:#555a53;}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.55;font-variant-numeric:tabular-nums}
+main{max-width:1120px;margin:0 auto;padding:28px 20px 80px;display:flex;flex-direction:column;gap:28px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.2}
+h1{font-size:30px;font-weight:700}
+h2{font-size:21px;font-weight:600}
+h3{font-size:15px;font-weight:600}
+p{margin:0;max-width:68ch}
+.lead{color:var(--ink2);font-size:16px}
+.eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);font-weight:600}
+section{display:flex;flex-direction:column;gap:14px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px}
+.grid{display:grid;gap:14px}
+.g4{grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(290px,1fr))}
+.g2{grid-template-columns:repeat(auto-fit,minmax(330px,1fr))}
+.key{border-left:3px solid var(--accent);padding:4px 0 4px 14px;display:flex;flex-direction:column;gap:4px}
+.key b{font-family:var(--display);font-size:15px}
+.key span{color:var(--ink2);font-size:14px}
+.controls{position:sticky;top:0;z-index:5;display:flex;flex-wrap:wrap;gap:18px 28px;align-items:flex-end;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 18px}
+.ctl{display:flex;flex-direction:column;gap:4px;min-width:210px;flex:1}
+.ctl label{font-size:12px;color:var(--ink2);font-weight:500}
+.ctl output{font-weight:600;color:var(--ink)}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{flex:1;border:0;background:transparent;color:var(--ink2);font:inherit;font-size:13px;padding:6px 10px;cursor:pointer}
+.seg button[aria-pressed=true]{background:var(--accent);color:var(--surface);font-weight:600}
+button:focus-visible,input:focus-visible,tr:focus-visible,a:focus-visible{outline:2px solid var(--s1);outline-offset:2px}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:920px;font-size:13.5px}
+th,td{padding:7px 8px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-size:11.5px;color:var(--ink2);font-weight:600;vertical-align:bottom;white-space:normal}
+th button{all:unset;cursor:pointer;color:inherit}
+th button:hover{color:var(--ink)}
+th[aria-sort] button::after{content:" ▼";font-size:9px}
+td.l,th.l{text-align:left}
+td.name{white-space:normal;min-width:190px}
+td.name small{display:block;color:var(--ink3);font-size:11.5px}
+tbody tr{cursor:pointer}
+tbody tr:hover{background:var(--accent-soft)}
+tbody tr.sel{background:var(--accent-soft);box-shadow:inset 3px 0 0 var(--accent)}
+.neg{color:var(--neg)}
+.bar{display:inline-block;height:8px;border-radius:0 4px 4px 0;background:var(--s1);vertical-align:middle;margin-right:6px}
+.bar.n{background:var(--neg)}
+.pill{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:2px 9px;font-size:12px;font-weight:500;color:var(--ink);background:var(--surface)}
+.pill i{width:8px;height:8px;border-radius:50%;display:inline-block}
+.detail{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px 26px}
+.detail dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:3px 14px;font-size:13.5px}
+.detail dt{color:var(--ink2)} .detail dd{margin:0;text-align:right;font-weight:500}
+.note{font-size:13px;color:var(--ink2)}
+svg{display:block;width:100%;height:auto}
+svg text{font-family:var(--body);fill:var(--ink2);font-size:11.5px}
+svg .lbl{fill:var(--ink);font-size:12px}
+svg .ax{stroke:var(--line);stroke-width:1}
+.tip{position:fixed;pointer-events:none;background:var(--ink);color:var(--bg);font-size:12.5px;line-height:1.4;padding:7px 10px;border-radius:6px;max-width:260px;z-index:20;display:none}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:8px}
+.card ul,.plain{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:5px;font-size:14px}
+.card .pill{align-self:flex-start}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12.5px;color:var(--ink2)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+ol.steps{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px;max-width:75ch}
+.src{columns:2 320px;column-gap:28px;font-size:12.5px;padding-left:18px;margin:0}
+.src li{break-inside:avoid;margin-bottom:5px}
+a{color:var(--accent)}
+footer{font-size:12.5px;color:var(--ink3)}
+@media (max-width:520px){h1{font-size:24px}.controls{position:static}}
+</style>
+</head>
+<body>
+<main>
+
+<header style="display:flex;flex-direction:column;gap:10px">
+  <span class="eyebrow">Cell-2-Power · Marktanalyse Restcellulose · Stand 11.11.2026</span>
+  <h1>Welches Produkt lohnt sich aus Restcellulose?</h1>
+  <p class="lead">28 Produkte aus fünf Märkten, mit derselben Kostenlogik wie eure Produktmatrix gerechnet, aber mit geprüften Preisen, realistischen Zuckerkosten und einer Obergrenze dafür, wie viel der Markt einem Startup abnimmt.</p>
+</header>
+
+<section>
+  <div class="grid g4">
+    <div class="key"><b>Gase und Kraftstoffe scheiden aus</b><span>Propan, Butan und Alkane erreichen Milligramm pro Liter. Für die Gewinnschwelle fehlt rund der Faktor 10.000. Kein Preisaufschlag gleicht das aus.</span></div>
+    <div class="key"><b>Der Zuckerpreis entscheidet alles</b><span>Die Matrix rechnet mit 140 €/t Cellulose. Massenchemikalien vertragen höchstens 300 bis 570 €/t. Zucker aus Stärke entspricht rund 450 €/t.</span></div>
+    <div class="key"><b>Der Wert liegt bei 5 bis 100 €/kg</b><span>Biotenside und fermentative Peptide tragen jeden realistischen Rohstoffpreis und brauchen kleine Anlagen statt Großchemie.</span></div>
+    <div class="key"><b>Peptide gehen ohne Pharma Reinraum</b><span>Glutathion und ε Polylysin sind Peptide in Lebensmittel und Kosmetikqualität. Therapeutische Peptide passen nicht zu euch.</span></div>
+  </div>
+</section>
+
+<div class="controls" role="group" aria-label="Annahmen">
+  <div class="ctl"><label for="feed">Rohstoff und Enzyme: <output id="feedOut"></output> je t Cellulose</label><input type="range" id="feed" min="100" max="700" step="10" value="300"></div>
+  <div class="ctl" style="min-width:230px"><label id="psl">Preisszenario</label><div class="seg" role="group" aria-labelledby="psl"><button type="button" data-ps="0" aria-pressed="false">Tief</button><button type="button" data-ps="1" aria-pressed="true">Basis</button><button type="button" data-ps="2" aria-pressed="false">Hoch</button></div></div>
+  <div class="ctl"><label for="share">Erreichbarer Marktanteil: <output id="shareOut"></output></label><input type="range" id="share" min="1" max="20" step="1" value="5"></div>
+</div>
+
+<section>
+  <h2>Rangliste aller Produkte</h2>
+  <p class="note">Klick auf eine Zeile zeigt die Details, Klick auf eine Spalte sortiert. Die Menge ist begrenzt durch eure Kapazität von 20.000 t Cellulose im Jahr und durch den Marktanteil oben.</p>
+  <div class="panel scroll">
+    <table id="tbl">
+      <thead><tr>
+        <th class="l">Produkt</th>
+        <th><button data-k="price">Preis<br>€/t</button></th>
+        <th><button data-k="cost">Herstellkosten<br>€/t, variabel</button></th>
+        <th><button data-k="db">Deckungsbeitrag<br>€/t</button></th>
+        <th><button data-k="vol">Absetzbar<br>t/a</button></th>
+        <th class="l"><button data-k="dba">Deckungsbeitrag<br>Mio. €/a</button></th>
+        <th><button data-k="trl">TRL</button></th>
+        <th class="l"><button data-k="score">Punkte<br>0 bis 100</button></th>
+        <th class="l">Urteil</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+  <div class="panel" id="detail"></div>
+</section>
+
+<section>
+  <h2>Wie viel darf der Rohstoff kosten?</h2>
+  <p class="note">Höchster Preis für Cellulose samt Enzymen, bei dem das Produkt noch die variablen Kosten deckt. Je länger der Balken, desto unempfindlicher ist das Produkt gegen teuren Zucker. Die Achse endet bei 1.000 €/t, größere Werte stehen als Zahl am Balken.</p>
+  <div class="panel"><div id="beChart"></div></div>
+</section>
+
+<section>
+  <h2>Marktkarte: Preis und Marktgröße</h2>
+  <p class="note">Beide Achsen sind logarithmisch. Die schrägen Linien verbinden Märkte mit gleichem Jahresumsatz. Gefüllte Punkte decken beim eingestellten Rohstoffpreis ihre variablen Kosten, hohle nicht.</p>
+  <div class="panel">
+    <div class="legend"><span><i class="dot" style="background:var(--s1)"></i>Favorit oder Prüfen</span><span><i class="dot" style="background:var(--mute)"></i>übrige Produkte</span><span><i class="dot" style="border:2px solid var(--mute)"></i>deckt die Kosten nicht</span></div>
+    <div id="mapChart"></div>
+  </div>
+</section>
+
+<section>
+  <h2>Empfehlung</h2>
+  <div class="grid g3">
+    <div class="card"><span class="pill"><i style="background:var(--good)"></i>Favorit</span><h3>Sophorolipide (Biotenside)</h3>
+      <ul><li>Hydrophobes Produkt, das sich als eigene Phase absetzt. Das passt zu eurer Erfahrung mit hydrophoben Produkten und spart Trennenergie.</li><li>Produktionshefe ist ein Wildtyp, also keine Gentechnikauflagen.</li><li>Kunden: Hersteller von Reinigern, Waschmitteln und Kosmetik, die fossile Tenside ersetzen wollen.</li><li>Risiko: Evonik hat 2024 eine Großanlage für Rhamnolipide eröffnet, REACH Registrierung nötig, zweiter Rohstoff Pflanzenöl.</li></ul></div>
+    <div class="card"><span class="pill"><i style="background:var(--good)"></i>Favorit</span><h3>Glutathion als Peptid ohne Reinraum</h3>
+      <ul><li>Tripeptid aus Hefefermentation mit 75 bis 145 $/kg in Industriequalität.</li><li>Lebensmittel und Kosmetikstandard statt Pharma Reinraum.</li><li>Kunden: Hersteller von Nahrungsergänzung und Kosmetikrohstoffen.</li><li>Risiko: Aufreinigung ist der größte Kostenblock, Kyowa und chinesische Hersteller dominieren.</li></ul></div>
+    <div class="card"><span class="pill"><i style="background:var(--warn)"></i>Prüfen</span><h3>Drei Optionen mit einer offenen Frage</h3>
+      <ul><li><b>Mikrofibrillierte Cellulose:</b> kein Fermenter, aber nur möglich, wenn eure Cellulose rein genug ist. Ein Labortest klärt das in Wochen.</li><li><b>Einzellerprotein:</b> großer Markt für Fisch und Tierfutter, braucht Futtermittelzulassung und mehr Kapital.</li><li><b>ε Polylysin:</b> hohe Marge, kleiner Markt, Zulassung als Lebensmittelzusatz in der EU klären.</li></ul></div>
+    <div class="card"><span class="pill"><i style="background:var(--mute)"></i>Nur mit Partner</span><h3>Milchsäure, Aminosäuren, Polyamid Bausteine</h3>
+      <ul><li>Rechnen sich nur in Anlagen ab mehreren zehntausend Tonnen und gegen Konzerne wie Corbion, Cargill oder Cathay.</li><li>Sinnvoll erst später als Lizenz oder Gemeinschaftsanlage, wenn euer Zucker nachweislich billiger ist als Stärkezucker.</li><li>Lysin ist ein Sonderfall: EU Zölle von 47,7 bis 58,3 % auf chinesische Ware schützen den Markt, der Preis fiel trotzdem.</li></ul></div>
+    <div class="card"><span class="pill"><i style="background:var(--mute)"></i>Zurückstellen</span><h3>Ectoin, Hyaluronsäure, PHA, Astaxanthin</h3>
+      <ul><li>Ectoin: Literaturpreis 600 bis 1.000 €/kg, chinesische Notierung inzwischen 320 CNY/kg.</li><li>Hyaluronsäure: Markt fest in chinesischer Hand.</li><li>PHA: realistisch 4 bis 6 $/kg statt 6.200 €/t, auf echtem Hydrolysat nur 6 bis 7 g/L.</li><li>Astaxanthin: winziger Markt, Zulassung als Futterzusatz.</li></ul></div>
+    <div class="card"><span class="pill"><i style="background:var(--crit)"></i>Streichen</span><h3>Gase, Kraftstoffe, Lösemittel</h3>
+      <ul><li>Propan, Butan, Ethan, R290, Alkane und Aromaten: kein Weg zur Gewinnschwelle sichtbar.</li><li>Ethanol, Isopropanol, Butanol: reines Mengengeschäft mit Petrochemie als Preisgeber.</li><li>Warnung aus Frankreich: Global Bioenergies stellte gasförmiges Isobuten aus Zucker her, hatte L'Oréal als Aktionär und fand trotzdem kein Geld für eine Anlage mit 2.500 t. Liquidation am 1.12.2025.</li></ul></div>
+  </div>
+</section>
+
+<section>
+  <h2>Peptide: was geht und was nicht</h2>
+  <div class="grid g3">
+    <div class="card"><h3>Therapeutische Peptide</h3><p class="note">Wirkstoffe wie GLP 1 entstehen durch chemische Synthese oder Gentechnik unter Pharma GMP. Das bedeutet Reinraum, Zulassung und Audits. Die Sorge eurer Biotechnologen ist berechtigt, dieses Feld passt nicht zu schnellem B2B Umsatz.</p></div>
+    <div class="card"><h3>Fermentative Peptide</h3><p class="note">Glutathion, ε Polylysin und Nisin wachsen im Fermenter und werden in Lebensmittel oder Kosmetikqualität verkauft. Gefordert sind Hygienekonzepte wie HACCP oder ISO 22716, kein Pharma Reinraum. L Arginin aus eurer Matrix ist eine Aminosäure und kein Peptid.</p></div>
+    <div class="card"><h3>Rekombinante Proteine</h3><p class="note">Präzisionsfermentation kostet heute 10 bis 20 $/kg, Milchproteine werden für 2 bis 8 $/kg gehandelt. Dazu kommen Gentechnikanlage und Novel Food Zulassung. Zurückstellen.</p></div>
+  </div>
+</section>
+
+<section>
+  <h2>Was an der Produktmatrix nicht stimmt</h2>
+  <ul class="plain" style="max-width:80ch">
+    <li><b>Rohstoffkosten:</b> 140 €/t Cellulose entsprechen rund 157 €/t Glucose. Dextrose aus Stärke kostet in Deutschland etwa 595 $/t. Studien nennen für Zucker aus Lignocellulose im besten Fall 0,26 bis 0,36 $/kg in Großanlagen, gemessen an Reststoffen bisher 1,3 bis 6,1 $/kg.</li>
+    <li><b>Milchsäure:</b> 1.900 €/t ist das obere Ende. Notierungen reichen von rund 1.170 $/t in den Niederlanden bis 2.327 $/t in Frankreich. Der EU Markt ist mit 488.000 t größer als angesetzt.</li>
+    <li><b>PHA:</b> 6.200 €/t ist zu hoch. Der weltweite Durchschnitt lag 2025 bei rund 3.890 $/t.</li>
+    <li><b>L Arginin:</b> Spotpreise 2026 liegen bei 2.500 bis 3.200 $/t, also unter den angesetzten 3.000 €/t.</li>
+    <li><b>Nur variable Kosten:</b> Abschreibung und Personal fehlen. Vergleichswerte: Enifer baut für 33 Mio. € eine Anlage für 3.000 t/a, Qore für 300 Mio. $ eine für 65.000 t/a.</li>
+    <li><b>Marktaufnahme:</b> In der Matrix steht bei fast allen Produkten die Menge 0 und bei Markt voll der Platzhalter 999. Die Rangfolge sagt deshalb nichts darüber, wie viel ihr wirklich verkaufen könnt.</li>
+    <li><b>Reiner Zucker statt Hydrolysat:</b> Mehrere Titer stammen aus Versuchen mit reiner Glucose. Auf echtem Hydrolysat fallen sie teils deutlich, bei PHA um den Faktor 20.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Die nächsten Schritte</h2>
+  <ol class="steps">
+    <li><b>Zuckerkosten messen.</b> Was kostet eine Tonne vergärbare Glucose aus eurem Grünabfall wirklich, mit Enzymen und Vorbehandlung? Diese eine Zahl entscheidet über die halbe Liste.</li>
+    <li><b>Hydrolysat testen.</b> Sophorolipid Hefe und Glutathion Hefe im Schüttelkolben auf eurem Hydrolysat anziehen. Das geht im S1 Labor und zeigt in wenigen Wochen, ob Hemmstoffe stören.</li>
+    <li><b>20 Kundengespräche führen.</b> Je zehn mit Herstellern von Reinigern und Kosmetik und mit Händlern für Nahrungsergänzung. Fragen: Spezifikation, Mindestmenge, Preis, Zertifikate.</li>
+    <li><b>Absichtserklärungen einsammeln.</b> Zwei bis drei LOIs tragen den EXIST Antrag und jedes Investorengespräch.</li>
+    <li><b>Ein Fokusprodukt festlegen</b> und Biopropan als Fernziel im Pitch behalten, nicht als erstes Geschäft.</li>
+  </ol>
+</section>
+
+<section>
+  <h2>Methodik und Annahmen</h2>
+  <ul class="plain" style="max-width:80ch">
+    <li>Kostenformel wie in eurer Matrix: Rohstoff geteilt durch Ausbeute, plus Trennenergie mal 23,6 €/t je MJ/kg, plus 250 €/t geteilt durch die Produktivität, plus 120 €/t Sonstiges, plus Sonderkosten.</li>
+    <li>Ausbeute je t Cellulose gleich Ausbeute je g Glucose mal 0,889, wie in der Matrix. Kapazität 20.000 t Cellulose im Jahr.</li>
+    <li>Technische Werte der 13 neuen Produkte sind typische Literaturwerte, vorsichtig angesetzt. Eure Biotechnologen sollten sie prüfen.</li>
+    <li>Punkte: 30 für die Marge, 20 für den absetzbaren Deckungsbeitrag, 20 für die technische Reife, 30 für die Eignung als Startup (Kapitalbedarf, Regulierung, Wettbewerb, von mir eingeschätzt).</li>
+    <li>Das Urteil folgt nicht allein den Punkten. Hyaluronsäure und Ectoin rechnen sich auf dem Papier, stehen aber wegen Preisverfall und der Marktmacht chinesischer Hersteller bei Zurückstellen.</li>
+    <li>Als Schätzung markierte Marktgrößen und Preise haben keine belastbare Quelle. Umrechnung 1 $ gleich 0,86 €, wie in der Matrix.</li>
+    <li>Mikrofibrillierte Cellulose führt die Liste nur, wenn Preis und Rohstoffqualität halten. Beides ist unsicher, deshalb steht sie bei Prüfen.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Quellen</h2>
+  <ol class="src">
+    <li><a href="https://renewable-carbon.eu/news/?p=17977">Lux Research: Kosten von Cellulosezucker</a></li>
+    <li><a href="https://eta-publications.lbl.gov/bibcite/export/ris/bibcite_reference/36656">Baral et al. 2025: Zuckerkosten aus Reststoffen</a></li>
+    <li><a href="https://www.procurementresource.com/resource-center/dextrose-monohydrate-price-trends">Procurement Resource: Dextrose Preise</a></li>
+    <li><a href="https://chemanalyst.com/Pricing-data/lactic-acid-1435">ChemAnalyst: Milchsäure</a></li>
+    <li><a href="https://www.imarcgroup.com/lactic-acid-pricing-report">IMARC: Milchsäure Preise</a></li>
+    <li><a href="https://www.imarcgroup.com/Europe-Lactic-Acid-Market">IMARC: Milchsäure Markt Europa</a></li>
+    <li><a href="https://www.home-of-welding.com/news/global-pha-and-pef-production-capacity-could-approach-2mt-by-2036-6762">IDTechEx: PHA Preise</a></li>
+    <li><a href="https://marketpublishers.com/report/bioplastics/polyhydroxyalkanoates-pha/global-industrial-grade-polyhydroxyalkanoates-pha-market-gir.html">GIR: PHA Produktion und Durchschnittspreis</a></li>
+    <li><a href="https://www.imarcgroup.com/succinic-acid-pricing-report">IMARC: Bernsteinsäure</a></li>
+    <li><a href="https://greenchemicalsblog.com/the-changing-landscape-of-bio-based-succinic-acid/">Green Chemicals Blog: Bernsteinsäure Hersteller</a></li>
+    <li><a href="https://www.chemtradeasia.com/market-insights/l-arginine-supply-chain-market-2026-outlook">Chemtradeasia: L Arginin</a></li>
+    <li><a href="https://www.chemtradeasia.com/market-insights/l-valine-market-2026-demand-supply-price-analysis">Chemtradeasia: L Valin</a></li>
+    <li><a href="https://aquafeed.com/regions/europe/eu-imposes-definitive-anti-dumping-duties-on-chinese-lysine-imports">Aquafeed: EU Zölle auf Lysin</a></li>
+    <li><a href="https://foodcom.pl/en/lysine-market-review-global-report/">Foodcom: Lysin Markt</a></li>
+    <li><a href="https://www.procurementresource.com/de/resource-center/1-4-butanediol-1-4-bd-price-trends">Procurement Resource: 1,4 Butandiol</a></li>
+    <li><a href="https://www.giiresearch.com/report/moi2123058-bio-based-butanediol-market-share-analysis.html">Mordor: Bio Butandiol Markt</a></li>
+    <li><a href="https://www.fertilizerdaily.com/20250715-qore-opens-bio-based-bdo-plant-in-iowa-marking-milestone-in-sustainable-manufacturing/">Qore: Anlage in Iowa</a></li>
+    <li><a href="https://bioenergyinternational.com/?p=25360">Cathay Biotech: Kapazitäten</a></li>
+    <li><a href="https://www.giiresearch.com/report/qyr1609534-global-pentanediamine-market-research-report.html">QYR: Pentandiamin Hersteller</a></li>
+    <li><a href="https://www.meticulousresearch.com/meticulous-next/biosurfactants-outlook-2026-2035">Meticulous: Biotenside</a></li>
+    <li><a href="https://www.factmr.com/report/biosurfactants-market">Fact.MR: Preisabstand Biotenside</a></li>
+    <li><a href="https://pdf.marketpublishers.com/globalinfo/global-l-glutathione-gir.pdf">GIR: Glutathion Preise</a></li>
+    <li><a href="https://www.intelmarketresearch.com/l-glutathione-market-59863">Intel Market Research: Glutathion Markt</a></li>
+    <li><a href="https://www.guidechem.com/price/en/28211-04-3.html">Guidechem: ε Polylysin</a></li>
+    <li><a href="https://dir.tridge.com/prices/nisin/CN">Tridge: Nisin</a></li>
+    <li><a href="https://www.guidechem.com/price/en/96702-03-3.html">Guidechem: Ectoin</a></li>
+    <li><a href="https://uvadoc.uva.es/bitstream/10324/51665/1/Ectoine-production-from-biogas.pdf">Universität Valladolid: Ectoin Marktwert</a></li>
+    <li><a href="https://pmarketresearch.com/?p=2365334">PMR: Hyaluronsäure Preise</a></li>
+    <li><a href="https://www.marketresearchfuture.com/reports/astaxanthin-market-4833">MRFR: Astaxanthin</a></li>
+    <li><a href="https://www.persistencemarketresearch.com/market-research/nanocelulose-market/toc">Persistence: Nanocellulose Preise</a></li>
+    <li><a href="https://forumnordic.com/?p=4038">Forum Nordic: Enifer Anlage</a></li>
+    <li><a href="https://slate.greyb.com/?p=7403">GreyB: Kosten Präzisionsfermentation</a></li>
+    <li><a href="https://live.euronext.com/fr/products/equities/company-news/2025-12-01-global-bioenergies-liquidation-judiciaire-et-radiation">Euronext: Liquidation Global Bioenergies</a></li>
+    <li><a href="https://www.industries-cosmetiques.fr/en/?p=20623">Industries Cosmétiques: Anlage von Global Bioenergies</a></li>
+  </ol>
+</section>
+
+<footer>Technische Daten der 15 Produkte aus eurer Matrix stammen aus der Datei produktmatrix-restcellulose.csv. Alle Rechnungen sind Überschlagsrechnungen für die Vorauswahl und ersetzen keine Anlagenplanung.</footer>
+</main>
+<div class="tip" id="tip"></div>
+
+<script>
+const D=[{"id": "ethan", "n": "Ethan", "g": "Energie & Kraftstoffe", "p": [300, 370, 450], "y": 0.00148, "pr": 4e-05, "sep": 5, "sk": 0, "m": 1000000, "ms": "EU, Schätzung Matrix", "trl": 1, "r": [2, 3, 2], "src": "Matrix", "note": "Kein publizierter mikrobieller Weg. Titer rein hypothetisch."}, {"id": "propan", "n": "Biopropan (BioLPG)", "g": "Energie & Kraftstoffe", "p": [1100, 1400, 1650], "y": 0.00218, "pr": 0.00014, "sep": 2.5, "sk": 0, "m": 200000, "ms": "EU, Schätzung Matrix", "trl": 3, "r": [2, 3, 2], "src": "Matrix", "note": "Bester publizierter Titer 3,4 mg/L. Wettbewerber gewinnen BioLPG als Nebenprodukt der HVO Herstellung."}, {"id": "butan", "n": "n Butan", "g": "Energie & Kraftstoffe", "p": [1300, 1650, 1900], "y": 0.00287, "pr": 8e-05, "sep": 2, "sk": 0, "m": 100000, "ms": "EU, Schätzung Matrix", "trl": 1, "r": [2, 3, 2], "src": "Matrix", "note": "Kein etablierter Weg, Titer hypothetisch."}, {"id": "r290", "n": "R290 Kältemittel (Propan)", "g": "Energie & Kraftstoffe", "p": [2000, 2600, 3400], "y": 0.00218, "pr": 0.00014, "sep": 4.5, "sk": 150, "m": 30000, "ms": "EU, Schätzung Matrix", "trl": 3, "r": [2, 3, 2], "src": "Matrix", "note": "Biologie wie Propan, zusätzlich Feinreinigung auf 99,5 %. Preis nur aus Angebotslisten."}, {"id": "ethanol", "n": "Ethanol (2G)", "g": "Energie & Kraftstoffe", "p": [900, 1125, 1300], "y": 0.409, "pr": 1.5, "sep": 4, "sk": 0, "m": 5000000, "ms": "EU, Schätzung Matrix", "trl": 8, "r": [1, 3, 1], "src": "Matrix", "note": "Industriestand, aber reines Mengengeschäft. Anlagen dieser Art haben meist mehr als 50.000 t/a."}, {"id": "saf", "n": "Kerosin, Diesel, Benzin (Alkane)", "g": "Energie & Kraftstoffe", "p": [1380, 2315, 2385], "y": 0.008, "pr": 0.01, "sep": 17.2, "sk": 0, "m": 2000000, "ms": "EU, Schätzung Matrix", "trl": 2, "r": [1, 2, 2], "src": "Matrix", "note": "Titer im mg/L Bereich. SAF braucht zusätzlich ASTM Zulassung."}, {"id": "btx", "n": "Aromaten (BTX)", "g": "Energie & Kraftstoffe", "p": [1000, 1310, 1500], "y": 0.0044, "pr": 0.003, "sep": 50.5, "sk": 0, "m": 5000000, "ms": "EU, Schätzung Matrix", "trl": 2, "r": [1, 3, 1], "src": "Matrix", "note": "Zelltoxisch, Titer um 100 mg/L."}, {"id": "ipa", "n": "Isopropanol", "g": "Plattformchemikalien", "p": [1150, 1415, 1600], "y": 0.216, "pr": 0.67, "sep": 5.25, "sk": 0, "m": 500000, "ms": "EU, Schätzung Matrix", "trl": 5, "r": [2, 4, 2], "src": "Matrix", "note": "40 g/L in 60 h publiziert. Petrochemie setzt den Preis."}, {"id": "butanol", "n": "n Butanol", "g": "Plattformchemikalien", "p": [1000, 1450, 1900], "y": 0.197, "pr": 0.24, "sep": 10.97, "sk": 0, "m": 700000, "ms": "EU, Schätzung Matrix", "trl": 7, "r": [2, 4, 2], "src": "Matrix", "note": "Produkthemmung ab 13 bis 20 g/L, teure Trennung."}, {"id": "lactic", "n": "Milchsäure", "g": "Plattformchemikalien", "p": [1000, 1500, 2000], "y": 0.684, "pr": 1.1, "sep": 5, "sk": 200, "m": 487900, "ms": "EU 2025, IMARC", "trl": 8, "r": [2, 4, 2], "src": "Matrix, Preis korrigiert", "note": "Preisquellen liegen weit auseinander: Niederlande rund 1.170 bis 1.245 $/t, Frankreich 2.327 $/t. Die Matrix rechnet mit dem oberen Ende."}, {"id": "succinic", "n": "Bernsteinsäure", "g": "Plattformchemikalien", "p": [1530, 2000, 2800], "y": 0.617, "pr": 0.45, "sep": 6.86, "sk": 250, "m": 70000, "ms": "Welt, biobasiert, aus Marktwert abgeleitet", "trl": 7, "r": [2, 4, 2], "src": "Matrix, Preis korrigiert", "note": "Von vier Pionieren (BioAmber, Reverdia, Myriant, Succinity) ist BioAmber 2018 insolvent gegangen, Reverdia wurde aufgelöst."}, {"id": "itaconic", "n": "Itaconsäure", "g": "Plattformchemikalien", "p": [1050, 1577, 1700], "y": 0.448, "pr": 0.6, "sep": 5.11, "sk": 200, "m": 10000, "ms": "EU, Schätzung Matrix", "trl": 8, "r": [3, 4, 1], "src": "Matrix", "note": "China verkauft rund ein Drittel unter dem deutschen Preis."}, {"id": "bdo", "n": "1,4 Butandiol (bio)", "g": "Plattformchemikalien", "p": [1500, 1850, 2300], "y": 0.338, "pr": 3.0, "sep": 12, "sk": 100, "m": 42460, "ms": "Welt, biobasiert 2026, Mordor", "trl": 9, "r": [1, 4, 2], "src": "Neu", "note": "Qore (Cargill und HELM) hat 2025 eine 300 Mio. $ Anlage gestartet. Technologie von Genomatica patentiert."}, {"id": "zucker", "n": "2G Zucker als Produkt", "g": "Plattformchemikalien", "p": [250, 350, 500], "y": 0.889, "pr": null, "sep": 3, "sk": 50, "m": 5000000, "ms": "EU, Schätzung", "trl": 7, "r": [3, 4, 2], "src": "Neu", "note": "Kein Fermenter nötig. Maßstab ist der Preis von Dextrose aus Stärke: rund 595 $/t in Deutschland."}, {"id": "pha", "n": "PHA Biopolymer", "g": "Biokunststoffe & Materialien", "p": [3100, 4000, 6200], "y": 0.265, "pr": 0.15, "sep": 8, "sk": 800, "m": 42000, "ms": "Welt, Produktion 2025", "trl": 5, "r": [2, 3, 3], "src": "Matrix, Preis korrigiert", "note": "IDTechEx nennt 4 bis 6 $/kg, der Weltdurchschnitt 2025 lag bei rund 3.890 $/t. Auf echtem Hydrolysat nur 6 bis 7 g/L."}, {"id": "pda", "n": "1,5 Pentandiamin (für Bio Polyamid)", "g": "Biokunststoffe & Materialien", "p": [2200, 2800, 3400], "y": 0.267, "pr": 2.0, "sep": 10, "sk": 300, "m": 50000, "ms": "Welt, Kapazität Cathay", "trl": 8, "r": [2, 4, 2], "src": "Neu", "note": "Baustein für PA 5X Spezialkunststoffe. Cathay Biotech und ein zweiter Hersteller halten praktisch den ganzen Markt. Preis geschätzt, keine Notierung."}, {"id": "mfc", "n": "Mikrofibrillierte Cellulose", "g": "Biokunststoffe & Materialien", "p": [2000, 5000, 25000], "y": 0.8, "pr": null, "sep": 15, "sk": 600, "m": 50000, "ms": "Welt, Schätzung", "trl": 8, "r": [3, 4, 3], "src": "Neu", "note": "Direkt aus der Cellulose, ohne Fermentation. Offen ist, ob Cellulose aus Grünabfall rein genug ist. Preisangaben reichen von wenigen €/kg bis über 30 $/kg."}, {"id": "arginin", "n": "L Arginin", "g": "Aminosäuren & Protein", "p": [2150, 2450, 3000], "y": 0.356, "pr": 1.1, "sep": 6.41, "sk": 400, "m": 10000, "ms": "EU, Schätzung Matrix", "trl": 9, "r": [3, 3, 2], "src": "Matrix, Preis korrigiert", "note": "Eine Aminosäure, kein Peptid. Spotpreise 2026 bei 2.500 bis 3.200 $/t."}, {"id": "lysin", "n": "L Lysin (Futter)", "g": "Aminosäuren & Protein", "p": [1300, 1600, 2000], "y": 0.445, "pr": 2.5, "sep": 6, "sk": 150, "m": 500000, "ms": "EU, Größenordnung", "trl": 9, "r": [1, 3, 2], "src": "Neu", "note": "EU Antidumpingzölle von 47,7 bis 58,3 % auf chinesisches Lysin seit Juli 2025. Nur ein Hersteller in der EU."}, {"id": "valin", "n": "L Valin (Futter)", "g": "Aminosäuren & Protein", "p": [1900, 2250, 2600], "y": 0.311, "pr": 1.5, "sep": 6.4, "sk": 300, "m": 100000, "ms": "Welt, Schätzung", "trl": 9, "r": [2, 3, 2], "src": "Neu", "note": "Futterqualität 2.200 bis 3.000 $/t, Pharmaqualität 5.000 bis 7.500 $/t."}, {"id": "scp", "n": "Einzellerprotein (Futter, Petfood)", "g": "Aminosäuren & Protein", "p": [1200, 2000, 3500], "y": 0.4, "pr": 2.0, "sep": 6, "sk": 200, "m": 1000000, "ms": "EU, Schätzung", "trl": 8, "r": [3, 2, 3], "src": "Neu", "note": "Enifer baut in Finnland für 33 Mio. € eine Anlage für 3.000 t/a auf Nebenströmen. Preis geschätzt."}, {"id": "xylitol", "n": "Xylitol", "g": "Aminosäuren & Protein", "p": [1700, 2150, 2600], "y": 0.187, "pr": 1.5, "sep": 6.2, "sk": 300, "m": 50000, "ms": "EU, Schätzung Matrix", "trl": 8, "r": [3, 3, 2], "src": "Matrix", "note": "Entsteht aus Hemicellulose, nicht aus Cellulose."}, {"id": "sopho", "n": "Sophorolipide (Biotenside)", "g": "Peptide & Feinchemie", "p": [5000, 10000, 20000], "y": 0.489, "pr": 1.5, "sep": 3, "sk": 900, "m": 10000, "ms": "Welt, Schätzung", "trl": 9, "r": [4, 3, 3], "src": "Neu", "note": "Hydrophobes Produkt, trennt sich als eigene Phase ab. Braucht zusätzlich Pflanzenöl. Preis geschätzt: Biotenside kosten das 3 bis 5 Fache üblicher Tenside."}, {"id": "gsh", "n": "Glutathion (Tripeptid)", "g": "Peptide & Feinchemie", "p": [65000, 90000, 125000], "y": 0.0267, "pr": 0.15, "sep": 20, "sk": 15000, "m": 1200, "ms": "Welt, aus Marktwert abgeleitet", "trl": 9, "r": [4, 3, 2], "src": "Neu", "note": "Echtes Peptid aus Hefefermentation, Lebensmittel und Kosmetikqualität. Industriequalität 75 bis 145 $/kg."}, {"id": "epl", "n": "ε Polylysin (Polypeptid)", "g": "Peptide & Feinchemie", "p": [30000, 50000, 80000], "y": 0.0889, "pr": 0.25, "sep": 10, "sk": 5000, "m": 500, "ms": "Welt, Schätzung", "trl": 9, "r": [4, 2, 3], "src": "Neu", "note": "Natürlicher Konservierer. China notiert 410 CNY/kg. Zulassung als Lebensmittelzusatz in der EU prüfen."}, {"id": "ectoin", "n": "Ectoin", "g": "Peptide & Feinchemie", "p": [40000, 60000, 150000], "y": 0.133, "pr": 0.5, "sep": 10, "sk": 8000, "m": 150, "ms": "Welt, aus Marktwert abgeleitet", "trl": 9, "r": [4, 4, 1], "src": "Neu", "note": "Literatur nennt 600 bis 1.000 €/kg, China notiert inzwischen 320 CNY/kg. Starker Preisverfall."}, {"id": "ha", "n": "Hyaluronsäure (Kosmetik)", "g": "Peptide & Feinchemie", "p": [80000, 120000, 140000], "y": 0.0889, "pr": 0.3, "sep": 25, "sk": 20000, "m": 1500, "ms": "Welt, Schätzung", "trl": 9, "r": [3, 4, 1], "src": "Neu", "note": "Kosmetikqualität in Europa 128 bis 160 $/kg. Markt von chinesischen Herstellern beherrscht."}, {"id": "asta", "n": "Astaxanthin (Hefe)", "g": "Peptide & Feinchemie", "p": [900000, 1300000, 2150000], "y": 0.00044, "pr": 0.004, "sep": 1200, "sk": 100000, "m": 90, "ms": "Welt, aus Marktwert abgeleitet", "trl": 9, "r": [3, 2, 3], "src": "Neu", "note": "Pigment für Lachsfutter. Synthetisch 1.000 bis 1.500 $/kg, aus Hefe rund 2.500 $/kg. Futterzusatz braucht Zulassung."}];
+const VERDICT={sopho:"Favorit",gsh:"Favorit",mfc:"Prüfen",scp:"Prüfen",epl:"Prüfen",
+ lactic:"Nur mit Partner",succinic:"Nur mit Partner",lysin:"Nur mit Partner",valin:"Nur mit Partner",arginin:"Nur mit Partner",bdo:"Nur mit Partner",pda:"Nur mit Partner",
+ ectoin:"Zurückstellen",ha:"Zurückstellen",asta:"Zurückstellen",pha:"Zurückstellen",zucker:"Zurückstellen",xylitol:"Zurückstellen",itaconic:"Zurückstellen"};
+const VCOL={"Favorit":"var(--good)","Prüfen":"var(--warn)","Nur mit Partner":"var(--mute)","Zurückstellen":"var(--mute)","Streichen":"var(--crit)"};
+const LBL={sopho:"t",gsh:"b",ha:"t",epl:"l",ectoin:"l",asta:"r",mfc:"r",scp:"t",lactic:"b",ethanol:"l",propan:"b"};
+const CAP=20000;
+const S={feed:300,ps:1,share:5,sort:"score",sel:"sopho"};
+const $=s=>document.querySelector(s);
+const nf=new Intl.NumberFormat("de-DE",{maximumFractionDigits:0});
+const nf1=new Intl.NumberFormat("de-DE",{minimumFractionDigits:1,maximumFractionDigits:1});
+const nf2=new Intl.NumberFormat("de-DE",{minimumFractionDigits:2,maximumFractionDigits:2});
+function eur(v){const a=Math.abs(v);if(a>=1e6)return (v<0?"−":"")+nf2.format(a/1e6)+" Mio.";return (v<0?"−":"")+nf.format(a);}
+function calc(d){
+  const price=d.p[S.ps];
+  const rest=d.sep*23.611+(d.pr?250/d.pr:0)+120+d.sk;
+  const cost=S.feed/d.y+rest, db=price-cost;
+  const vol=Math.min(d.y*CAP,S.share/100*d.m);
+  const dba=db*vol/1e6, be=(price-rest)*d.y, marge=db/price;
+  let sc=30*Math.max(0,Math.min(marge,0.6))/0.6;
+  sc+=dba>0.2?20*Math.max(0,Math.min(1,Math.log10(dba/0.2)/2)):0;
+  sc+=20*(d.trl-1)/8;
+  sc+=30*((d.r[0]+d.r[1]+d.r[2])/3-1)/4;
+  return {...d,price,cost,db,vol,dba,be,marge,score:sc,verdict:VERDICT[d.id]||"Streichen"};
+}
+function rows(){return D.map(calc);}
+
+/* Tabelle */
+function renderTable(R){
+  const k=S.sort, sorted=[...R].sort((a,b)=>b[k]-a[k]);
+  const maxD=Math.max(...R.map(r=>Math.abs(Math.max(r.dba,-5))),1);
+  $("#tbl tbody").innerHTML=sorted.map(r=>{
+    const dbaShown=Math.max(r.dba,-99);
+    const w=Math.min(70,Math.abs(Math.max(r.dba,-5))/maxD*70);
+    return `<tr tabindex="0" data-id="${r.id}" class="${r.id===S.sel?"sel":""}">
+      <td class="l name">${r.n}<small>${r.g} · ${r.src}</small></td>
+      <td>${eur(r.price)}</td><td>${eur(r.cost)}</td>
+      <td class="${r.db<0?"neg":""}">${eur(r.db)}</td>
+      <td>${nf.format(r.vol)}</td>
+      <td class="l ${r.dba<0?"neg":""}"><span class="bar ${r.dba<0?"n":""}" style="width:${w}px"></span>${r.dba<-99?"unter −99":nf1.format(dbaShown).replace("-","−")}</td>
+      <td>${r.trl}</td>
+      <td class="l"><span class="bar" style="width:${r.score*0.6}px;background:var(--accent)"></span>${nf.format(r.score)}</td>
+      <td class="l"><span class="pill"><i style="background:${VCOL[r.verdict]}"></i>${r.verdict}</span></td></tr>`;}).join("");
+  document.querySelectorAll("#tbl th").forEach(th=>{const b=th.querySelector("button");if(b&&b.dataset.k===k)th.setAttribute("aria-sort","descending");else th.removeAttribute("aria-sort");});
+}
+function renderDetail(R){
+  const r=R.find(x=>x.id===S.sel)||R[0];
+  const rate=["sehr schwer","schwer","mittel","gut","sehr gut"];
+  $("#detail").innerHTML=`<div class="detail">
+   <div style="display:flex;flex-direction:column;gap:8px"><span class="eyebrow">${r.g}</span><h3 style="font-size:18px">${r.n}</h3><p class="note">${r.note}</p><span class="pill" style="align-self:flex-start"><i style="background:${VCOL[r.verdict]}"></i>${r.verdict}</span></div>
+   <dl><dt>Preisspanne</dt><dd>${eur(r.p[0])} bis ${eur(r.p[2])} €/t</dd><dt>Markt</dt><dd>${nf.format(r.m)} t/a</dd><dt>Basis Marktgröße</dt><dd>${r.ms}</dd><dt>Ausbeute</dt><dd>${r.y<0.01?nf2.format(r.y*1000)+" kg":nf2.format(r.y)+" t"} je t Cellulose</dd><dt>Produktivität</dt><dd>${r.pr?(r.pr<0.01?"unter 0,01":nf2.format(r.pr))+" g/(L·h)":"kein Fermenter"}</dd></dl>
+   <dl><dt>Marge</dt><dd class="${r.marge<0?"neg":""}">${r.marge<-9.99?"unter −999 %":nf.format(r.marge*100).replace("-","−")+" %"}</dd><dt>Tragbarer Rohstoffpreis</dt><dd>${r.be>0?nf.format(r.be)+" €/t":"keiner"}</dd><dt>Kapitalbedarf und Einstieg</dt><dd>${rate[r.r[0]-1]}</dd><dt>Regulierung</dt><dd>${rate[r.r[1]-1]}</dd><dt>Wettbewerb</dt><dd>${rate[r.r[2]-1]}</dd></dl></div>`;
+}
+
+/* Tooltip */
+const tip=$("#tip");
+function showTip(e,html){tip.innerHTML=html;tip.style.display="block";const x=Math.min(e.clientX+14,innerWidth-270),y=Math.min(e.clientY+14,innerHeight-90);tip.style.left=x+"px";tip.style.top=y+"px";}
+function hideTip(){tip.style.display="none";}
+function bindTips(root){root.querySelectorAll("[data-tip]").forEach(el=>{el.addEventListener("mousemove",e=>showTip(e,el.dataset.tip));el.addEventListener("mouseleave",hideTip);});}
+
+/* Tragbarer Rohstoffpreis */
+function renderBE(R){
+  const rs=[...R].sort((a,b)=>b.be-a.be), W=1040,L=250,RG=90,rowH=21,T=34,B=30,H=T+rs.length*rowH+B, max=1000;
+  const x=v=>L+Math.max(0,Math.min(v,max))/max*(W-L-RG);
+  let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Tragbarer Rohstoffpreis je Produkt">`;
+  for(let v=0;v<=1000;v+=200){s+=`<line class="ax" x1="${x(v)}" y1="${T-4}" x2="${x(v)}" y2="${H-B}"/><text x="${x(v)}" y="${H-B+14}" text-anchor="middle">${nf.format(v)}</text>`;}
+  s+=`<text x="${W-RG}" y="${H-2}" text-anchor="end">€ je t Cellulose samt Enzymen</text>`;
+  rs.forEach((r,i)=>{const y=T+i*rowH, hi=r.verdict==="Favorit"||r.verdict==="Prüfen";
+    const t=`<b>${r.n}</b><br>Tragbar bis ${r.be>0?nf.format(r.be)+" €/t Cellulose":"keinem Preis"}<br>${r.verdict}`;
+    s+=`<g data-tip="${t.replace(/"/g,"&quot;")}"><rect x="0" y="${y}" width="${W}" height="${rowH}" fill="transparent"/><text class="lbl" x="${L-8}" y="${y+14}" text-anchor="end">${r.n}</text>`;
+    if(r.be>0){const w=x(r.be)-L;s+=`<path d="M${L},${y+4} h${Math.max(w-4,0)} a4,4 0 0 1 4,4 v5 a4,4 0 0 1 -4,4 h${-Math.max(w-4,0)} z" fill="${hi?"var(--s1)":"var(--mute)"}"/><text x="${x(r.be)+6}" y="${y+14}">${r.be>max?nf.format(r.be)+" →":nf.format(r.be)}</text>`;}
+    else s+=`<text x="${L+6}" y="${y+14}" style="fill:var(--neg)">nie rentabel</text>`;
+    s+=`</g>`;});
+  const ref=[[140,"Matrix: 140"],[453,"Zucker aus Stärke: rund 450"]];
+  ref.forEach(([v,t])=>{s+=`<line x1="${x(v)}" y1="${T-6}" x2="${x(v)}" y2="${H-B}" stroke="var(--ink3)" stroke-dasharray="4 3"/><text x="${x(v)+4}" y="${T-12}" class="lbl">${t}</text>`;});
+  s+=`<line x1="${x(S.feed)}" y1="${T-22}" x2="${x(S.feed)}" y2="${H-B}" stroke="var(--accent)" stroke-width="2"/><text x="${x(S.feed)+4}" y="${T-24}" class="lbl" style="fill:var(--accent);font-weight:600">Eingestellt: ${nf.format(S.feed)}</text>`;
+  s+=`</svg>`; $("#beChart").innerHTML=s; bindTips($("#beChart"));
+}
+
+/* Marktkarte */
+function renderMap(R){
+  const W=1040,H=520,L=70,RG=30,T=20,B=46;
+  const xmin=1.6,xmax=7,ymin=2.3,ymax=6.5;
+  const x=v=>L+(Math.log10(v)-xmin)/(xmax-xmin)*(W-L-RG), y=v=>H-B-(Math.log10(v)-ymin)/(ymax-ymin)*(H-T-B);
+  let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Marktkarte Preis gegen Marktgröße">`;
+  for(let e=2;e<=7;e++){s+=`<line class="ax" x1="${x(10**e)}" y1="${T}" x2="${x(10**e)}" y2="${H-B}"/><text x="${x(10**e)}" y="${H-B+15}" text-anchor="middle">${nf.format(10**e)}</text>`;}
+  for(let e=3;e<=6;e++){s+=`<line class="ax" x1="${L}" y1="${y(10**e)}" x2="${W-RG}" y2="${y(10**e)}"/><text x="${L-8}" y="${y(10**e)+4}" text-anchor="end">${e===6?"1 Mio.":nf.format(10**e)}</text>`;}
+  s+=`<text x="${W-RG}" y="${H-6}" text-anchor="end">Marktgröße in t pro Jahr</text><text x="${L-60}" y="${T-6}">Preis in € je t</text>`;
+  [[1e8,"100 Mio. €"],[1e9,"1 Mrd. €"],[1e10,"10 Mrd. €"]].forEach(([v,t])=>{
+    const x1=Math.max(10**xmin,v/10**ymax), x2=Math.min(10**xmax,v/10**ymin);
+    s+=`<line x1="${x(x1)}" y1="${y(v/x1)}" x2="${x(x2)}" y2="${y(v/x2)}" stroke="var(--ink3)" stroke-dasharray="2 4"/>`;
+    const lx=x1*1.25; s+=`<text x="${x(lx)+4}" y="${y(v/lx)-4}">${t} Umsatz</text>`;});
+  R.forEach(r=>{const cx=x(r.m),cy=y(r.p[S.ps]),hi=r.verdict==="Favorit"||r.verdict==="Prüfen",c=hi?"var(--s1)":"var(--mute)";
+    const t=`<b>${r.n}</b><br>${eur(r.price)} €/t · ${nf.format(r.m)} t/a<br>Deckungsbeitrag ${eur(r.db)} €/t<br>${r.verdict}`;
+    s+=`<g data-tip="${t.replace(/"/g,"&quot;")}"><circle cx="${cx}" cy="${cy}" r="14" fill="transparent"/><circle cx="${cx}" cy="${cy}" r="6" fill="${r.db>0?c:"var(--surface)"}" stroke="${r.db>0?"var(--surface)":c}" stroke-width="2"/></g>`;
+    const p=LBL[r.id]; if(p){const o={t:[0,-11,"middle"],b:[0,19,"middle"],l:[-10,4,"end"],r:[10,4,"start"]}[p];
+      s+=`<text class="lbl" x="${cx+o[0]}" y="${cy+o[1]}" text-anchor="${o[2]}">${r.n.replace(/ \(.*/,"")}</text>`;}});
+  s+=`</svg>`; $("#mapChart").innerHTML=s; bindTips($("#mapChart"));
+}
+
+function render(){
+  $("#feedOut").textContent=nf.format(S.feed)+" €"; $("#shareOut").textContent=S.share+" %";
+  const R=rows(); renderTable(R); renderDetail(R); renderBE(R); renderMap(R);
+}
+$("#feed").addEventListener("input",e=>{S.feed=+e.target.value;render();});
+$("#share").addEventListener("input",e=>{S.share=+e.target.value;render();});
+document.querySelectorAll(".seg button").forEach(b=>b.addEventListener("click",()=>{S.ps=+b.dataset.ps;document.querySelectorAll(".seg button").forEach(o=>o.setAttribute("aria-pressed",o===b));render();}));
+document.querySelectorAll("#tbl th button").forEach(b=>b.addEventListener("click",()=>{S.sort=b.dataset.k;render();}));
+$("#tbl tbody").addEventListener("click",e=>{const tr=e.target.closest("tr");if(tr){S.sel=tr.dataset.id;render();}});
+$("#tbl tbody").addEventListener("keydown",e=>{if(e.key==="Enter"){const tr=e.target.closest("tr");if(tr){S.sel=tr.dataset.id;render();}}});
+render();
+</script>
+</body>
+</html>
